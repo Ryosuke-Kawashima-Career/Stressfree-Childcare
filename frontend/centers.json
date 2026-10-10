@@ -1,8 +1,282 @@
 [
-  {"id":"health-1","name":"Little Steps Health Center","category":"health","address":"Demo address: Community Lane, Sector 14, Gurgaon","locality":"Sector 14","latitude":28.472,"longitude":77.041,"services":["Child health consultations","Childhood vaccination inquiries"],"serviceTags":["vaccination"],"costStatus":"free","feeNotes":"Demo example: consultation free; confirm vaccination fees with provider.","hours":"Mon–Sat, 9 am–1 pm (demo)","languages":["Hindi","English"],"ageRange":"0–12 years (demo)","phone":null,"whatsappNumber":null,"website":null,"sourceStatus":"Demo data"},
-  {"id":"health-2","name":"Family Care Clinic","category":"health","address":"Demo address: Market Road, Sector 31, Gurgaon","locality":"Sector 31","latitude":28.452,"longitude":77.052,"services":["Child health consultations","Childhood vaccination inquiries"],"serviceTags":["vaccination"],"costStatus":"paid","feeNotes":"Demo example: ₹300 consultation; other fees need confirmation.","hours":"Mon–Fri, 10 am–5 pm (demo)","languages":["Hindi","English"],"ageRange":null,"phone":null,"whatsappNumber":null,"website":null,"sourceStatus":"Demo data"},
-  {"id":"health-3","name":"Community Wellness Center","category":"health","address":"Demo address: Park Lane, Sector 46, Gurgaon","locality":"Sector 46","latitude":28.439,"longitude":77.067,"services":["Child health guidance","Nutrition guidance"],"serviceTags":[],"costStatus":"unknown","feeNotes":null,"hours":null,"languages":null,"ageRange":null,"phone":null,"whatsappNumber":null,"website":null,"sourceStatus":"Demo data"},
-  {"id":"learning-1","name":"Bright Futures Learning Hub","category":"learning","address":"Demo address: Library Lane, Sector 15, Gurgaon","locality":"Sector 15","latitude":28.459,"longitude":77.034,"services":["Reading practice","Homework support"],"serviceTags":[],"costStatus":"free","feeNotes":"Demo example: free learning sessions; confirm eligibility.","hours":"Mon–Fri, 3–6 pm (demo)","languages":["Hindi","English"],"ageRange":"6–14 years (demo)","phone":null,"whatsappNumber":null,"website":null,"sourceStatus":"Demo data"},
-  {"id":"learning-2","name":"Open Book Community Space","category":"learning","address":"Demo address: Community Road, Sector 40, Gurgaon","locality":"Sector 40","latitude":28.45,"longitude":77.061,"services":["Reading circle","Foundational numeracy"],"serviceTags":[],"costStatus":"free","feeNotes":"Demo example: free community sessions; confirm schedule.","hours":null,"languages":["Hindi"],"ageRange":"5–12 years (demo)","phone":null,"whatsappNumber":null,"website":null,"sourceStatus":"Demo data"},
-  {"id":"learning-3","name":"Growing Minds Study Center","category":"learning","address":"Demo address: School Lane, Sector 45, Gurgaon","locality":"Sector 45","latitude":28.444,"longitude":77.075,"services":["Homework support","Small-group learning"],"serviceTags":[],"costStatus":"paid","feeNotes":"Demo example: ₹500 per month; confirm current fees.","hours":"Mon–Sat, 4–7 pm (demo)","languages":["English","Hindi"],"ageRange":"8–16 years (demo)","phone":null,"whatsappNumber":null,"website":null,"sourceStatus":"Demo data"}
+  {
+    "id": "medanta",
+    "name": "Medanta — The Medicity",
+    "category": "health",
+    "address": "CH Baktawar Singh Road, Sector 38, Gurugram, Haryana 122001",
+    "locality": "Sector 38",
+    "latitude": 28.438,
+    "longitude": 77.04,
+    "services": [
+      "Hospital services"
+    ],
+    "serviceTags": [],
+    "costStatus": "unknown",
+    "feeNotes": null,
+    "hours": null,
+    "languages": null,
+    "ageRange": null,
+    "phone": "+91-880-000-1068",
+    "whatsappNumber": null,
+    "website": "https://www.medanta.org/contact-us",
+    "sourceUrl": "https://www.medanta.org/contact-us",
+    "checkedAt": "2026-10-10",
+    "sourceStatus": "Official website",
+    "isDemo": false,
+    "providerType": "Hospital",
+    "coordinateStatus": "Approximate area location; confirm the entrance with the provider"
+  },
+  {
+    "id": "artemis",
+    "name": "Artemis Hospital",
+    "category": "health",
+    "address": "Sector 51, Gurugram, Haryana 122001",
+    "locality": "Sector 51",
+    "latitude": 28.431,
+    "longitude": 77.071,
+    "services": [
+      "Hospital services"
+    ],
+    "serviceTags": [],
+    "costStatus": "unknown",
+    "feeNotes": null,
+    "hours": null,
+    "languages": null,
+    "ageRange": null,
+    "phone": "+91-124-4511111",
+    "whatsappNumber": null,
+    "website": "https://www.artemishospitals.com/",
+    "sourceUrl": "https://www.artemishospitals.com/",
+    "checkedAt": "2026-10-10",
+    "sourceStatus": "Official website",
+    "isDemo": false,
+    "providerType": "Hospital",
+    "coordinateStatus": "Approximate area location; confirm the entrance with the provider"
+  },
+  {
+    "id": "udayan-dundahera",
+    "name": "Udayan Care — Dundahera IT Centre",
+    "category": "learning",
+    "address": "417, Old Delhi Gurgaon Road, Dundahera Village, Sector 20, Gurugram, Haryana 122016",
+    "locality": "Dundahera · Sector 20",
+    "latitude": 28.513,
+    "longitude": 77.08,
+    "services": [
+      "Data entry training",
+      "Customer care training",
+      "Community technology skills"
+    ],
+    "serviceTags": [],
+    "costStatus": "unknown",
+    "feeNotes": null,
+    "hours": null,
+    "languages": null,
+    "ageRange": null,
+    "phone": "0124-4116778",
+    "whatsappNumber": null,
+    "website": "https://udayancare.org/locations/",
+    "sourceUrl": "https://udayancare.org/locations/",
+    "checkedAt": "2026-10-10",
+    "sourceStatus": "Official website",
+    "isDemo": false,
+    "providerType": "Learning center",
+    "coordinateStatus": "Approximate area location; confirm the entrance with the provider"
+  },
+  {
+    "id": "udayan-manesar",
+    "name": "Udayan Care — Manesar IT Centre",
+    "category": "learning",
+    "address": "3rd Floor, Yadav Market, Main Bus Stand, opposite Shree Radhey Hospital & Trauma Centre, Manesar, Gurugram, Haryana 122051",
+    "locality": "Manesar",
+    "latitude": 28.36,
+    "longitude": 76.938,
+    "services": [
+      "Accounting training (Tally)",
+      "Data entry training",
+      "Community technology skills"
+    ],
+    "serviceTags": [],
+    "costStatus": "unknown",
+    "feeNotes": null,
+    "hours": null,
+    "languages": null,
+    "ageRange": null,
+    "phone": "8130847010",
+    "whatsappNumber": null,
+    "website": "https://udayancare.org/locations/",
+    "sourceUrl": "https://udayancare.org/locations/",
+    "checkedAt": "2026-10-10",
+    "sourceStatus": "Official website",
+    "isDemo": false,
+    "providerType": "Learning center",
+    "coordinateStatus": "Approximate area location; confirm the entrance with the provider"
+  },
+  {
+    "id": "health-1",
+    "name": "Little Steps Health Center",
+    "category": "health",
+    "address": "Demo address: Community Lane, Sector 14, Gurgaon",
+    "locality": "Sector 14",
+    "latitude": 28.472,
+    "longitude": 77.041,
+    "services": [
+      "Child health consultations",
+      "Childhood vaccination inquiries"
+    ],
+    "serviceTags": [
+      "vaccination"
+    ],
+    "costStatus": "free",
+    "feeNotes": "Demo example: consultation free; confirm vaccination fees with provider.",
+    "hours": "Mon–Sat, 9 am–1 pm (demo)",
+    "languages": [
+      "Hindi",
+      "English"
+    ],
+    "ageRange": "0–12 years (demo)",
+    "phone": null,
+    "whatsappNumber": null,
+    "website": null,
+    "sourceStatus": "Demo data",
+    "isDemo": true,
+    "providerType": "Health center"
+  },
+  {
+    "id": "health-2",
+    "name": "Family Care Clinic",
+    "category": "health",
+    "address": "Demo address: Market Road, Sector 31, Gurgaon",
+    "locality": "Sector 31",
+    "latitude": 28.452,
+    "longitude": 77.052,
+    "services": [
+      "Child health consultations",
+      "Childhood vaccination inquiries"
+    ],
+    "serviceTags": [
+      "vaccination"
+    ],
+    "costStatus": "paid",
+    "feeNotes": "Demo example: ₹300 consultation; other fees need confirmation.",
+    "hours": "Mon–Fri, 10 am–5 pm (demo)",
+    "languages": [
+      "Hindi",
+      "English"
+    ],
+    "ageRange": null,
+    "phone": null,
+    "whatsappNumber": null,
+    "website": null,
+    "sourceStatus": "Demo data",
+    "isDemo": true,
+    "providerType": "Health center"
+  },
+  {
+    "id": "health-3",
+    "name": "Community Wellness Center",
+    "category": "health",
+    "address": "Demo address: Park Lane, Sector 46, Gurgaon",
+    "locality": "Sector 46",
+    "latitude": 28.439,
+    "longitude": 77.067,
+    "services": [
+      "Child health guidance",
+      "Nutrition guidance"
+    ],
+    "serviceTags": [],
+    "costStatus": "unknown",
+    "feeNotes": null,
+    "hours": null,
+    "languages": null,
+    "ageRange": null,
+    "phone": null,
+    "whatsappNumber": null,
+    "website": null,
+    "sourceStatus": "Demo data",
+    "isDemo": true,
+    "providerType": "Health center"
+  },
+  {
+    "id": "learning-1",
+    "name": "Bright Futures Learning Hub",
+    "category": "learning",
+    "address": "Demo address: Library Lane, Sector 15, Gurgaon",
+    "locality": "Sector 15",
+    "latitude": 28.459,
+    "longitude": 77.034,
+    "services": [
+      "Reading practice",
+      "Homework support"
+    ],
+    "serviceTags": [],
+    "costStatus": "free",
+    "feeNotes": "Demo example: free learning sessions; confirm eligibility.",
+    "hours": "Mon–Fri, 3–6 pm (demo)",
+    "languages": [
+      "Hindi",
+      "English"
+    ],
+    "ageRange": "6–14 years (demo)",
+    "phone": null,
+    "whatsappNumber": null,
+    "website": null,
+    "sourceStatus": "Demo data",
+    "isDemo": true,
+    "providerType": "Learning center"
+  },
+  {
+    "id": "learning-2",
+    "name": "Open Book Community Space",
+    "category": "learning",
+    "address": "Demo address: Community Road, Sector 40, Gurgaon",
+    "locality": "Sector 40",
+    "latitude": 28.45,
+    "longitude": 77.061,
+    "services": [
+      "Reading circle",
+      "Foundational numeracy"
+    ],
+    "serviceTags": [],
+    "costStatus": "free",
+    "feeNotes": "Demo example: free community sessions; confirm schedule.",
+    "hours": null,
+    "languages": [
+      "Hindi"
+    ],
+    "ageRange": "5–12 years (demo)",
+    "phone": null,
+    "whatsappNumber": null,
+    "website": null,
+    "sourceStatus": "Demo data",
+    "isDemo": true,
+    "providerType": "Learning center"
+  },
+  {
+    "id": "learning-3",
+    "name": "Growing Minds Study Center",
+    "category": "learning",
+    "address": "Demo address: School Lane, Sector 45, Gurgaon",
+    "locality": "Sector 45",
+    "latitude": 28.444,
+    "longitude": 77.075,
+    "services": [
+      "Homework support",
+      "Small-group learning"
+    ],
+    "serviceTags": [],
+    "costStatus": "paid",
+    "feeNotes": "Demo example: ₹500 per month; confirm current fees.",
+    "hours": "Mon–Sat, 4–7 pm (demo)",
+    "languages": [
+      "English",
+      "Hindi"
+    ],
+    "ageRange": "8–16 years (demo)",
+    "phone": null,
+    "whatsappNumber": null,
+    "website": null,
+    "sourceStatus": "Demo data",
+    "isDemo": true,
+    "providerType": "Learning center"
+  }
 ]
