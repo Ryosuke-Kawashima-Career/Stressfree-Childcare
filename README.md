@@ -6,7 +6,7 @@ The public dashboard includes four sourced providers; fictional examples are iso
 
 ## Architecture
 
-A static single-page app. No backend, accounts, geocoding, or location permission.
+A static single-page UI with an optional FastAPI backend foundation. Phase 8 serves the existing UI and `/api/health` in one process; provider search/import and UI integration remain pending. See [backend setup](backend/README.md). No accounts, geocoding, or location permission yet.
 
 ```text
 centers.json ──fetch──> app.js ──render──> index.html + styles.css
