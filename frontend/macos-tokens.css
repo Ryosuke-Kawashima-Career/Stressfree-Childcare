@@ -1,0 +1,185 @@
+/**
+ * macOS Tahoe & Dia Design System Tokens (Light Theme & Adaptive System)
+ * Fluid liquid acrylic glassmorphism, refined micro-borders, and tactile interaction primitives.
+ */
+
+:root,
+[data-theme="light"] {
+  /* System Font Stack */
+  --macos-font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+  --macos-font-mono: "SF Mono", "Fira Code", Menlo, Monaco, Consolas, monospace;
+
+  /* macOS Tahoe Light Palette */
+  --macos-bg-base: #f5f5f7;
+  --macos-bg-canvas: #ffffff;
+  --macos-surface-acrylic: rgba(255, 255, 255, 0.78);
+  --macos-surface-card: rgba(255, 255, 255, 0.88);
+  --macos-surface-hover: rgba(0, 0, 0, 0.05);
+  --macos-surface-active: rgba(0, 0, 0, 0.09);
+  --macos-surface-selected: rgba(0, 122, 255, 0.12);
+
+  /* Micro-Borders & Highlights */
+  --macos-border-subtle: rgba(0, 0, 0, 0.08);
+  --macos-border-highlight: rgba(0, 0, 0, 0.12);
+  --macos-border-focus: #007aff;
+  --macos-inner-glow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.85);
+
+  /* Accents & Vibrant Tones (Light Optimized) */
+  --macos-accent-blue: #007aff;
+  --macos-accent-purple: #af52de;
+  --macos-accent-indigo: #5856d6;
+  --macos-accent-teal: #30b0c7;
+  --macos-accent-green: #34c759;
+  --macos-accent-orange: #ff9500;
+  --macos-accent-red: #ff3b30;
+
+  /* Traffic Lights */
+  --macos-traffic-close: #ff5f56;
+  --macos-traffic-minimize: #ffbd2e;
+  --macos-traffic-zoom: #27c93f;
+
+  /* Text & Labels (Light Palette) */
+  --macos-text-primary: #1d1d1f;
+  --macos-text-secondary: rgba(60, 60, 67, 0.75);
+  --macos-text-tertiary: rgba(60, 60, 67, 0.45);
+  --macos-text-placeholder: rgba(60, 60, 67, 0.35);
+
+  /* Blur Vibrancy */
+  --macos-blur-dock: blur(28px) saturate(180%);
+  --macos-blur-sheet: blur(36px) saturate(190%);
+  --macos-blur-popover: blur(20px) saturate(170%);
+
+  /* Shadow Elevations (Soft Diffuse Shadows for Light Backgrounds) */
+  --macos-shadow-dock: 0 12px 36px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+  --macos-shadow-modal: 0 24px 60px rgba(0, 0, 0, 0.12), 0 4px 14px rgba(0, 0, 0, 0.06);
+  --macos-shadow-button: 0 1px 2px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  --macos-shadow-card: 0 4px 20px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
+
+  /* Smooth Spring Curves */
+  --macos-ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --macos-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --macos-duration-fast: 150ms;
+  --macos-duration-normal: 240ms;
+
+  /* Grid Canvas */
+  --macos-grid-dot: rgba(0, 0, 0, 0.07);
+}
+
+/* Optional Dark Theme Override */
+[data-theme="dark"] {
+  --macos-bg-base: #0f1117;
+  --macos-bg-canvas: #161821;
+  --macos-surface-acrylic: rgba(22, 25, 35, 0.72);
+  --macos-surface-card: rgba(30, 34, 48, 0.65);
+  --macos-surface-hover: rgba(255, 255, 255, 0.08);
+  --macos-surface-active: rgba(255, 255, 255, 0.14);
+  --macos-surface-selected: rgba(10, 132, 255, 0.2);
+
+  --macos-border-subtle: rgba(255, 255, 255, 0.08);
+  --macos-border-highlight: rgba(255, 255, 255, 0.16);
+  --macos-border-focus: #0a84ff;
+  --macos-inner-glow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+
+  --macos-text-primary: #f5f5f7;
+  --macos-text-secondary: rgba(235, 235, 245, 0.65);
+  --macos-text-tertiary: rgba(235, 235, 245, 0.38);
+  --macos-text-placeholder: rgba(235, 235, 245, 0.25);
+
+  --macos-shadow-dock: 0 12px 32px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.2);
+  --macos-shadow-modal: 0 24px 60px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+  --macos-shadow-button: 0 2px 4px rgba(0, 0, 0, 0.18);
+  --macos-shadow-card: 0 8px 24px rgba(0, 0, 0, 0.25);
+
+  --macos-grid-dot: rgba(255, 255, 255, 0.1);
+}
+
+/* Glassmorphic Floating Pill Toolbar */
+.macos-pill-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--macos-surface-acrylic);
+  backdrop-filter: var(--macos-blur-dock);
+  -webkit-backdrop-filter: var(--macos-blur-dock);
+  border: 1px solid var(--macos-border-subtle);
+  border-radius: 9999px;
+  box-shadow: var(--macos-shadow-dock), var(--macos-inner-glow);
+}
+
+/* Segmented Control Item */
+.macos-segmented-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--macos-text-secondary);
+  border: none;
+  font-family: var(--macos-font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--macos-duration-fast) var(--macos-ease-spring);
+}
+
+.macos-segmented-btn:hover {
+  background: var(--macos-surface-hover);
+  color: var(--macos-text-primary);
+}
+
+.macos-segmented-btn.active {
+  background: var(--macos-accent-blue);
+  color: #ffffff;
+  box-shadow: var(--macos-shadow-button);
+}
+
+.macos-segmented-btn:active {
+  transform: scale(0.96);
+}
+
+/* macOS Modal Sheet */
+.macos-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.macos-sheet-panel {
+  width: 90%;
+  max-width: 480px;
+  background: var(--macos-surface-card);
+  backdrop-filter: var(--macos-blur-sheet);
+  -webkit-backdrop-filter: var(--macos-blur-sheet);
+  border: 1px solid var(--macos-border-highlight);
+  border-radius: 18px;
+  box-shadow: var(--macos-shadow-modal), var(--macos-inner-glow);
+  padding: 24px;
+  animation: macos-sheet-enter var(--macos-duration-normal) var(--macos-ease-spring);
+}
+
+/* macOS Subtle Dot Grid Background */
+.macos-canvas-grid {
+  background-color: var(--macos-bg-base);
+  background-image: radial-gradient(var(--macos-grid-dot) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+@keyframes macos-sheet-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

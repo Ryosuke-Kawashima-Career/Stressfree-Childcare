@@ -2,7 +2,7 @@
 
 Helps a caregiver in Gurgaon find a child health center or free learning center, inspect its details, and prepare a WhatsApp inquiry.
 
-The dashboard includes four published providers with official sources and six clearly labeled fictional demo examples. Confirm details with a provider. Published map pins show approximate areas, not confirmed entrances.
+The public dashboard includes four sourced providers; fictional examples are isolated in test fixtures. Confirm details with a provider. Published map pins show approximate areas, not confirmed entrances.
 
 ## Architecture
 
@@ -16,9 +16,9 @@ centers.json ──fetch──> app.js ──render──> index.html + styles.c
                           └─ shared filter predicate ──> results list + map pins
 ```
 
-- **Data:** local JSON, two published hospitals, two published learning centers, and six demo centers (three Health, three Learning) with coordinates, services, cost status, and contact/demo status.
+- **Data:** local JSON, two published hospitals, two published learning centers, with six isolated test fixtures (three Health, three Learning) with coordinates, services, cost status, and contact/demo status.
 - **State:** one filter state and one selected-center ID. A single filter predicate feeds both the list and the map, so they always agree. A selection that is filtered out is cleared.
-- **Detail card:** one reusable card for list and map selection. It shows address, services, cost, contact, and demo status. Unknown optional fields show "Not confirmed".
+- **Detail card:** one reusable card for list and map selection. It shows address, services, cost, contact, source links, and checked dates. Unknown optional fields show "Not confirmed".
 - **Inquiry:** contextual message previews; external WhatsApp integration remains deferred.
 - **Map:** locally bundled Leaflet 1.9.4 with real OpenStreetMap tiles, visible attribution, geographic markers, and tile-failure retry. List/details still work if the map is unavailable.
 

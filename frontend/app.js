@@ -1,4 +1,6 @@
 'use strict';
+// One filter predicate drives the public provider list and geographic markers.
+// Fictional scenarios live in tests/fixtures and enter only through test routing.
 const state = {query:'',category:'all',cost:'all',serviceTag:null,selectedCenterId:null,inquiryOpen:false};
 let centers = [], map = null, tiles = null, boundsKey = null, dataLoaded = false;
 const markers = new Map();
@@ -6,7 +8,6 @@ const $ = id => document.getElementById(id);
 const escapeHTML = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const costText = center => ({free:'Free',paid:'Paid',unknown:'Not confirmed'}[center.costStatus]);
 const symbol = center => center.category === 'health' ? '✚' : '▤';
-const sourceLabel = center => center.isDemo ? 'Demo data' : 'Official source';
 function mapStatus(message, retry = true) {
   $('map-status').hidden = !message;
   $('map-status-text').textContent = message;
@@ -70,8 +71,8 @@ function renderMap(filtered) {
     let marker = markers.get(center.id);
     if (!marker) {
       marker = L.marker([center.latitude,center.longitude], {
-        icon:L.divIcon({className:`provider-pin ${center.category}${center.isDemo?' demo':''}`,html:`<span aria-hidden="true">${symbol(center)}</span>`,iconSize:[34,34],iconAnchor:[17,17]}),
-        title:`${center.name} — ${center.isDemo?'fictional demo location':'approximate area location'}`,alt:`View ${center.name}`,keyboard:true
+        icon:L.divIcon({className:`provider-pin ${center.category}`,html:`<span aria-hidden="true">${symbol(center)}</span>`,iconSize:[34,34],iconAnchor:[17,17]}),
+        title:`${center.name} — approximate area location`,alt:`View ${center.name}`,keyboard:true
       }).addTo(map);
       marker.on('click', () => selectCenter(center.id,'pin'));
       marker.getElement().addEventListener('keydown', event => {
@@ -83,7 +84,7 @@ function renderMap(filtered) {
     }
     const element = marker.getElement();
     element.dataset.pin = center.id;
-    element.setAttribute('aria-label',`View ${center.name} — ${center.isDemo?'demo':'approximate location'}`);
+    element.setAttribute('aria-label',`View ${center.name} — approximate location`);
     element.setAttribute('aria-pressed',String(center.id === state.selectedCenterId));
     marker.setZIndexOffset(center.id === state.selectedCenterId ? 1000 : 0);
   }
@@ -100,7 +101,7 @@ function render() {
   document.querySelectorAll('[data-category]').forEach(button => button.setAttribute('aria-pressed',String(button.dataset.category === state.category)));
   $('tag').hidden = !state.serviceTag;
   $('count').innerHTML = `<strong>${filtered.length} ${filtered.length === 1 ? 'center' : 'centers'}</strong> to explore${state.category !== 'all' ? ` · ${state.category === 'health' ? 'Hospitals & health' : 'Learning'}` : ' in Gurgaon'}`;
-  $('results').innerHTML = filtered.length ? filtered.map(center => `<button class="center-card" data-center="${escapeHTML(center.id)}" aria-pressed="${center.id === state.selectedCenterId}"><span class="center-icon ${center.category}-icon" aria-hidden="true">${symbol(center)}</span><span class="center-body"><span class="center-top"><span class="category-label ${center.category}-label">${escapeHTML(center.providerType)}</span><span class="demo-label">${sourceLabel(center)}</span></span><strong class="center-name">${escapeHTML(center.name)}</strong><span class="center-locality">${escapeHTML(center.locality)} · Gurgaon</span><span class="services-line">${escapeHTML(center.services.join(' · '))}</span><span class="center-bottom"><span class="cost-badge ${center.costStatus}">${costText(center)}</span>${center.serviceTags.includes('vaccination') ? '<span class="service-badge">Vaccination services</span>' : ''}</span></span><span class="card-arrow" aria-hidden="true">↗</span></button>`).join('') : '<div class="empty-results"><h3>No centers match just yet</h3><p>Try another locality, service, or cost filter.</p><button class="text-button" id="empty-reset">Clear filters and start again ↺</button></div>';
+  $('results').innerHTML = filtered.length ? filtered.map(center => `<button class="center-card" data-center="${escapeHTML(center.id)}" aria-pressed="${center.id === state.selectedCenterId}"><span class="center-icon ${center.category}-icon" aria-hidden="true">${symbol(center)}</span><span class="center-body"><span class="center-top"><span class="category-label ${center.category}-label">${escapeHTML(center.providerType)}</span></span><strong class="center-name">${escapeHTML(center.name)}</strong><span class="center-locality">${escapeHTML(center.locality)} · Gurgaon</span><span class="services-line">${escapeHTML(center.services.join(' · '))}</span><span class="center-bottom"><span class="cost-badge ${center.costStatus}">${costText(center)}</span>${center.serviceTags.includes('vaccination') ? '<span class="service-badge">Vaccination services</span>' : ''}</span></span><span class="card-arrow" aria-hidden="true">↗</span></button>`).join('') : '<div class="empty-results"><h3>No centers match just yet</h3><p>Try another locality, service, or cost filter.</p><button class="text-button" id="empty-reset">Clear filters and start again ↺</button></div>';
   renderMap(filtered);
   renderDetails();
 }
@@ -113,7 +114,7 @@ function renderDetails() {
     return `<div class="wide"><dt>${label}</dt><dd><a href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(url)}</a></dd></div>`;
   };
   const message = state.serviceTag === 'vaccination' ? 'Hello, I found your center on Care & Learn. Could you confirm childhood vaccination services, current availability, fees, and how to arrange a visit?' : 'Hello, I found your center on Care & Learn. Could you confirm your services, fees, opening hours, and how to arrange a visit?';
-  $('details').innerHTML = `<div class="detail-content"><div class="detail-top"><div><span class="category-label ${center.category}-label">${escapeHTML(center.providerType)} · ${sourceLabel(center)}</span><h3>${escapeHTML(center.name)}</h3><span class="cost-badge ${center.costStatus}">${costText(center)}</span></div><button id="close-details" class="close-button" aria-label="Close center details">×</button></div><p class="detail-address">${escapeHTML(center.address)}</p><div class="detail-services">${center.services.map(service=>`<span>${escapeHTML(service)}</span>`).join('')}</div><dl class="detail-facts">${fact('Fees',center.feeNotes,true)}${fact('Hours',center.hours)}${fact('Age range',center.ageRange)}${fact('Languages',center.languages?.join(', '))}${fact('Contact',center.phone || 'Contact not provided')}${linkFact('Website',center.website)}${fact('Source status',center.sourceStatus)}${center.isDemo?'':linkFact('Official source',center.sourceUrl)+fact('Source checked',center.checkedAt)+fact('Map precision',center.coordinateStatus,true)}</dl><p class="contact-note">${center.isDemo?'Fictional center with no live contact. Review a sample inquiry below.':'Published information checked on '+escapeHTML(center.checkedAt)+'. Confirm services, fees, age eligibility, and the exact location with the provider. WhatsApp availability is not confirmed.'}</p><button id="inquiry" class="inquiry-button" aria-expanded="${state.inquiryOpen}" aria-controls="inquiry-preview">${state.inquiryOpen?'Hide inquiry preview':'Preview WhatsApp inquiry'} <span aria-hidden="true">↗</span></button><div id="inquiry-preview" class="inquiry-box" ${state.inquiryOpen?'':'hidden'}><h4>Your inquiry preview</h4><p class="recipient">For ${escapeHTML(center.name)} · ${center.isDemo?'Fixture contact':'WhatsApp contact not confirmed'}</p><p class="inquiry-message">${escapeHTML(message)}</p><p class="fine-print">Preview only. No message is sent and no WhatsApp link opens.</p></div></div>`;
+  $('details').innerHTML = `<div class="detail-content"><div class="detail-top"><div><span class="category-label ${center.category}-label">${escapeHTML(center.providerType)}</span><h3>${escapeHTML(center.name)}</h3><span class="cost-badge ${center.costStatus}">${costText(center)}</span></div><button id="close-details" class="close-button" aria-label="Close center details">×</button></div><p class="detail-address">${escapeHTML(center.address)}</p><div class="detail-services">${center.services.map(service=>`<span>${escapeHTML(service)}</span>`).join('')}</div><dl class="detail-facts">${fact('Fees',center.feeNotes,true)}${fact('Hours',center.hours)}${fact('Age range',center.ageRange)}${fact('Languages',center.languages?.join(', '))}${fact('Contact',center.phone || 'Contact not provided')}${linkFact('Website',center.website)}${linkFact('Source',center.sourceUrl)}${fact('Information checked',center.checkedAt)}${fact('Map precision',center.coordinateStatus,true)}</dl><p class="contact-note">Confirm services, fees, age eligibility, and the exact location with the provider. WhatsApp availability is not confirmed.</p><button id="inquiry" class="inquiry-button" aria-expanded="${state.inquiryOpen}" aria-controls="inquiry-preview">${state.inquiryOpen?'Hide inquiry preview':'Preview WhatsApp inquiry'} <span aria-hidden="true">↗</span></button><div id="inquiry-preview" class="inquiry-box" ${state.inquiryOpen?'':'hidden'}><h4>Your inquiry preview</h4><p class="recipient">For ${escapeHTML(center.name)} · WhatsApp contact not confirmed</p><p class="inquiry-message">${escapeHTML(message)}</p><p class="fine-print">Preview only. No message is sent and no WhatsApp link opens.</p></div></div>`;
 }
 $('search').addEventListener('input',event=>update({query:event.target.value}));
 $('cost').addEventListener('change',event=>update({cost:event.target.value}));
@@ -132,7 +133,6 @@ fetch('centers.json').then(response=>{if(!response.ok) throw new Error('Center d
   centers=data;dataLoaded=true;
   $('hospital-total').textContent=centers.filter(c=>!c.isDemo && c.providerType==='Hospital').length;
   $('learning-total').textContent=centers.filter(c=>!c.isDemo && c.category==='learning').length;
-  $('demo-total').textContent=centers.filter(c=>c.isDemo).length;
   render();
 }).catch(()=>{
   dataLoaded=false;centers=[];

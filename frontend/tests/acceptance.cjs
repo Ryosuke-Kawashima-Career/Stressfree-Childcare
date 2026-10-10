@@ -6,7 +6,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname,'../..');
 const output = path.join(root,'dev/verification');
 const base = process.env.CARE_LEARN_URL || 'http://127.0.0.1:4173';
-const report = {date:'2026-10-10',checks:[],consoleErrors:[],widths:[]};
+const report = {date:'2026-10-10',phase:7,checks:[],consoleErrors:[],widths:[]};
 function pass(name) {report.checks.push(name);console.log('PASS',name);}
 async function synchronized(page, expected) {
   const list = await page.locator('[data-center]').evaluateAll(nodes=>nodes.map(n=>n.dataset.center).sort());
@@ -16,22 +16,47 @@ async function synchronized(page, expected) {
 (async()=>{
   const browser = await chromium.launch({headless:true,channel:process.env.PLAYWRIGHT_CHANNEL || 'chrome'});
   try {
-    const page = await browser.newPage({viewport:{width:1280,height:900}});
+    // Deterministic map transport; live tiles are checked separately.
+    const pixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1sAAAAASUVORK5CYII=', 'base64');
+    async function newTestPage(options) {
+      const testPage=await browser.newPage(options);
+      await testPage.route('https://tile.openstreetmap.org/**', route=>route.fulfill({status:200,contentType:'image/png',body:pixel}));
+      return testPage;
+    }
+    const page = await newTestPage({viewport:{width:1280,height:900}});
     page.on('pageerror',error=>report.consoleErrors.push(error.message));
     await page.goto(base);await page.waitForSelector('[data-center]');
-    await synchronized(page,10);
+    await synchronized(page,4);
     assert.equal(await page.locator('#hospital-total').innerText(),'2');
     assert.equal(await page.locator('#learning-total').innerText(),'2');
-    assert.equal(await page.locator('#demo-total').innerText(),'6');
+    assert.equal(await page.locator('#demo-total').count(),0);
+    assert.equal(await page.locator('.dashboard-summary > div').count(),2);
+    assert.ok(!/demo|fictional|fixture|official source|published/i.test(await page.locator('body').innerText()));
+    const announcement=page.locator('#health-announcement');
+    assert.equal(await announcement.getAttribute('href'),'https://www.pib.gov.in/PressReleasePage.aspx?PRID=2227422');
+    assert.equal(await announcement.getAttribute('target'),'_blank');
+    assert.ok((await page.locator('.reminder').innerText()).includes('13 Feb 2026'));
+    assert.ok((await page.locator('.reminder').innerText()).includes('Ministry of Health'));
+    await announcement.focus();assert.ok(await announcement.evaluate(el=>el===document.activeElement));
+    pass('V8/V9 public interface has no demo classification and the reminder links a dated government announcement');
+    await page.locator('#vaccination').click();await synchronized(page,0);
+    assert.equal(await page.locator('#search').inputValue(),'');assert.equal(await page.locator('#cost').inputValue(),'all');
+    await page.locator('#reset').click();await page.locator('[data-category="learning"]').click();await page.locator('#cost').selectOption('free');await synchronized(page,0);
+    await page.locator('#reset').click();pass('Public vaccination/free filters show honest empty results where service or price is unconfirmed');
     await page.waitForFunction(()=>document.querySelectorAll('.leaflet-tile-loaded').length>0,{},{timeout:20000});
     assert.ok(await page.locator('.leaflet-control-attribution').innerText().then(t=>t.includes('OpenStreetMap')));
-    pass('Leaflet loads real OSM tiles, attribution, 10 synchronized records, and dashboard totals');
+    pass('Leaflet loads deterministic tiles, attribution, four public providers, and dashboard totals');
     await page.locator('[data-center="medanta"]').click();
     assert.ok((await page.locator('#details').innerText()).includes('2026-10-10'));
     assert.ok((await page.locator('#details').innerText()).includes('Approximate area'));
     assert.equal(await page.locator('#details a').last().getAttribute('href'),'https://www.medanta.org/contact-us');
-    await page.screenshot({path:path.join(output,'caregiving-desktop.png'),fullPage:true});
+    assert.ok(!/demo|fictional|fixture|official source|published/i.test(await page.locator('body').innerText()));
     pass('Published hospital details include address, contact, official source, checked date, and location precision');
+    // Isolated fixture-only scenarios retain the original filter/inquiry contracts.
+    const fixtures=JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/centers.json'),'utf8'));
+    const publicData=JSON.parse(fs.readFileSync(path.join(root,'frontend/centers.json'),'utf8'));
+    await page.route('**/centers.json',r=>r.fulfill({json:[...publicData,...fixtures.map(c=>({...c,isDemo:false}))]}));
+    await page.reload();await page.waitForSelector('[data-center]');
     await page.locator('#search').fill('conflicting search');await page.locator('#cost').selectOption('paid');
     await page.locator('#vaccination').click();await synchronized(page,2);
     assert.equal(await page.locator('#search').inputValue(),'');assert.equal(await page.locator('#cost').inputValue(),'all');
@@ -78,30 +103,30 @@ async function synchronized(page, expected) {
       const dimensions=await page.evaluate(()=>({viewport:innerWidth,document:document.documentElement.scrollWidth}));
       assert.ok(dimensions.document<=dimensions.viewport,JSON.stringify(dimensions));
       report.widths.push(dimensions);
-      if (width===390) await page.screenshot({path:path.join(output,'caregiving-mobile.png'),fullPage:true});
+
     }
     await page.emulateMedia({reducedMotion:'reduce'});await page.reload();await page.waitForSelector('[data-center]');
     assert.equal(await page.locator('.center-card').first().evaluate(el=>getComputedStyle(el).transitionDuration),'0s');
     assert.equal(await page.evaluate(()=>map.options.zoomAnimation),false);
     pass('V6 no horizontal overflow at 320/390/760/1024/1280 and reduced-motion disables CSS/map animation');
-    const broken = await browser.newPage();
+    const broken = await newTestPage();
     await broken.route('**/centers.json',route=>route.fulfill({status:503,body:'Unavailable'}));
     await broken.goto(base);await broken.getByText('Unable to load center information',{exact:true}).waitFor();
     assert.equal(await broken.locator('[data-center]').count(),0);assert.equal(await broken.locator('[data-pin]').count(),0);
     assert.ok(await broken.locator('#reset').isDisabled());
-    await broken.unroute('**/centers.json');await broken.reload();await broken.waitForSelector('[data-center]');await synchronized(broken,10);await broken.close();
+    await broken.unroute('**/centers.json');await broken.reload();await broken.waitForSelector('[data-center]');await synchronized(broken,4);await broken.close();
     pass('V7 dataset failure produces readable error, no fabricated records, and recovers after reload');
-    const noTiles = await browser.newPage();
+    const noTiles = await newTestPage();
     await noTiles.route('https://tile.openstreetmap.org/**',route=>route.abort());
     await noTiles.goto(base);await noTiles.waitForSelector('[data-center]');
     await noTiles.waitForFunction(()=>!document.getElementById('map-status').hidden);
     await noTiles.locator('[data-center="artemis"]').click();assert.ok((await noTiles.locator('#details').innerText()).includes('Artemis Hospital'));
-    await synchronized(noTiles,10);
-    await noTiles.unroute('https://tile.openstreetmap.org/**');await noTiles.locator('#retry-map').click();
+    await synchronized(noTiles,4);
+    await noTiles.unroute('https://tile.openstreetmap.org/**');await noTiles.route('https://tile.openstreetmap.org/**',r=>r.fulfill({status:200,contentType:'image/png',body:pixel}));await noTiles.locator('#retry-map').click();
     await noTiles.waitForFunction(()=>document.querySelectorAll('.leaflet-tile-loaded').length>0,{},{timeout:20000});
     await noTiles.waitForFunction(()=>document.getElementById('map-status').hidden);
     await noTiles.close();pass('OSM tile failure preserves discovery/details and Retry recovers');
-    const noLibrary = await browser.newPage();
+    const noLibrary = await newTestPage();
     await noLibrary.route('**/vendor/leaflet/leaflet.js',route=>route.abort());
     await noLibrary.goto(base);await noLibrary.waitForSelector('[data-center]');
     assert.ok((await noLibrary.locator('#map-status').innerText()).includes('Map library unavailable'));
@@ -110,7 +135,7 @@ async function synchronized(page, expected) {
     assert.deepEqual(report.consoleErrors,[]);pass('No application JavaScript errors during normal discovery');
     report.status='passed';
   } finally {
-    fs.writeFileSync(path.join(output,'caregiving-phase6-results.json'),JSON.stringify(report,null,2)+'\n');
+    fs.writeFileSync(path.join(output,'caregiving-phase7-results.json'),JSON.stringify(report,null,2)+'\n');
     await browser.close();
   }
 })().catch(error=>{console.error(error);process.exitCode=1;});
