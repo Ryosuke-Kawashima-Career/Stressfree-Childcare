@@ -1,7 +1,7 @@
 dev/
 .claude
 .codex
-docs/
+docs/demos/
 .venv/
 __pycache__/
 .pytest_cache/
