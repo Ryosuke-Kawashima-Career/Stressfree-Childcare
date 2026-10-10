@@ -1,0 +1,5 @@
+"""Safe application errors shared by adapters, cache and API routes."""
+class DiscoveryError(Exception):
+    def __init__(self, code: str, message: str, status: int = 503):
+        super().__init__(message)
+        self.code, self.message, self.status = code, message, status

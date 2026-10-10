@@ -100,3 +100,67 @@ class ErrorDetail(Contract):
 
 class ErrorResponse(Contract):
     error: ErrorDetail
+
+
+# Phase 9 adds discovery contracts without changing the Phase 8 directory defaults.
+from datetime import datetime
+
+
+class Citation(Contract):
+    url: HttpUrl
+    title: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
+    fields: list[str]
+
+
+class EvidenceCitation(Citation):
+    # Quotes exist only in transient extraction/validation, not public responses or SQLite.
+    quote: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=1000)]
+
+
+class DiscoveryProvider(Provider):
+    citations: list[Citation] = Field(default_factory=list)
+    retrievedAt: datetime | None = None
+    relevanceReason: Annotated[str, StringConstraints(max_length=300)] | None = None
+
+
+class Candidate(DiscoveryProvider):
+    citations: list[EvidenceCitation]
+
+
+class Extraction(Contract):
+    providers: list[Candidate]
+
+
+class DiscoverRequest(Contract):
+    query: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)]
+    category: Literal['all', 'health', 'learning'] = 'all'
+    area: Literal['Gurugram', 'Manesar'] = 'Gurugram'
+    refresh: bool = False
+    savedScopeId: Annotated[str, StringConstraints(pattern=r'^[a-f0-9]{64}$')] | None = None
+
+
+class DiscoveryResponse(Contract):
+    items: list[DiscoveryProvider]
+    total: Annotated[int, Field(ge=0)]
+    directoryCounts: DirectoryCounts
+    distanceMode: Literal['none'] = 'none'
+    coverage: Literal['Gurugram source-backed discovery'] = 'Gurugram source-backed discovery'
+    scopeId: Annotated[str, StringConstraints(pattern=r'^[a-f0-9]{64}$')]
+    retrievedAt: datetime
+    retrievalStatus: Literal['fresh', 'cached', 'stored']
+    warnings: list[str] = Field(default_factory=list)
+
+
+class ScopedSearchRequest(SearchRequest):
+    scopeId: Annotated[str, StringConstraints(pattern=r'^[a-f0-9]{64}$')] | None = None
+
+
+class DirectorySearchResponse(SearchResponse):
+    items: list[DiscoveryProvider]
+    coverage: Literal['Gurugram source-backed discovery'] = 'Gurugram source-backed discovery'
+
+
+class StoredSearchRequest(Contract):
+    query: Query = ''
+    category: Literal['all','health','learning'] = 'all'
+    area: Literal['Gurugram','Manesar'] = 'Gurugram'

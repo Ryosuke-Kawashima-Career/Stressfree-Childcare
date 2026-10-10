@@ -9,6 +9,7 @@ const base = process.env.CARE_LEARN_URL || 'http://127.0.0.1:4173';
 const report = {date:'2026-10-10',phase:7,checks:[],consoleErrors:[],widths:[]};
 function pass(name) {report.checks.push(name);console.log('PASS',name);}
 async function synchronized(page, expected) {
+  await page.waitForFunction(n=>document.querySelectorAll('[data-center]').length===n,expected);
   const list = await page.locator('[data-center]').evaluateAll(nodes=>nodes.map(n=>n.dataset.center).sort());
   const pins = await page.locator('[data-pin]').evaluateAll(nodes=>nodes.map(n=>n.dataset.pin).sort());
   assert.deepEqual(pins,list);assert.equal(list.length,expected);
@@ -21,6 +22,26 @@ async function synchronized(page, expected) {
     async function newTestPage(options) {
       const testPage=await browser.newPage(options);
       await testPage.route('https://tile.openstreetmap.org/**', route=>route.fulfill({status:200,contentType:'image/png',body:pixel}));
+      let dataset=JSON.parse(fs.readFileSync(path.join(root,'backend/data/providers.json'),'utf8'));
+      const scopes=new Map();
+      testPage.setDataset = records => {dataset=records;};
+      await testPage.route('**/api/reveal', async route=>{
+        const body=route.request().postDataJSON();
+        const items=dataset.filter(c=>[c.name,c.providerType,c.address,c.locality,...c.services].join(' ').toLowerCase().includes(body.query.toLowerCase().trim()));
+        const scopeId=require('node:crypto').createHash('sha256').update('stored:'+body.query).digest('hex');scopes.set(scopeId,items);
+        await route.fulfill({json:{items,total:items.length,directoryCounts:{health:dataset.filter(c=>c.category==='health').length,learning:dataset.filter(c=>c.category==='learning').length},scopeId,retrievedAt:'2026-10-10T10:00:00Z',retrievalStatus:'stored',warnings:[]}});
+      });
+      await testPage.route('**/api/discover', async route=>{
+        const body=route.request().postDataJSON();
+        const items=dataset.filter(c=>[c.name,c.providerType,c.address,c.locality,...c.services].join(' ').toLowerCase().includes(body.query.toLowerCase().trim()));
+        const scopeId=require('node:crypto').createHash('sha256').update(body.query).digest('hex');scopes.set(scopeId,items);
+        await route.fulfill({json:{items,total:items.length,directoryCounts:{health:dataset.filter(c=>c.category==='health').length,learning:dataset.filter(c=>c.category==='learning').length},scopeId,retrievedAt:'2026-10-10T10:00:00Z',retrievalStatus:'fresh',warnings:[]}});
+      });
+      await testPage.route('**/api/search', async route=>{
+        const b=route.request().postDataJSON();
+        const items=(b.scopeId?scopes.get(b.scopeId):dataset).filter(c=>(b.category==='all'||c.category===b.category)&&(b.cost==='all'||c.costStatus===b.cost)&&(!b.serviceTag||c.serviceTags.includes(b.serviceTag)));
+        await route.fulfill({json:{items,total:items.length,directoryCounts:{health:dataset.filter(c=>c.category==='health').length,learning:dataset.filter(c=>c.category==='learning').length}}});
+      });
       return testPage;
     }
     const page = await newTestPage({viewport:{width:1280,height:900}});
@@ -49,15 +70,15 @@ async function synchronized(page, expected) {
     await page.locator('[data-center="medanta"]').click();
     assert.ok((await page.locator('#details').innerText()).includes('2026-10-10'));
     assert.ok((await page.locator('#details').innerText()).includes('Approximate area'));
-    assert.equal(await page.locator('#details a').last().getAttribute('href'),'https://www.medanta.org/contact-us');
+    assert.equal(await page.locator('#details .detail-facts > div').filter({has:page.locator('dt').filter({hasText:/^Source$/})}).locator('a').getAttribute('href'),'https://www.medanta.org/contact-us');
     assert.ok(!/demo|fictional|fixture|official source|published/i.test(await page.locator('body').innerText()));
     pass('Published hospital details include address, contact, official source, checked date, and location precision');
     // Isolated fixture-only scenarios retain the original filter/inquiry contracts.
     const fixtures=JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/centers.json'),'utf8'));
     const publicData=JSON.parse(fs.readFileSync(path.join(root,'frontend/centers.json'),'utf8'));
-    await page.route('**/centers.json',r=>r.fulfill({json:[...publicData,...fixtures.map(c=>({...c,isDemo:false}))]}));
+    page.setDataset([...publicData,...fixtures.map(c=>({...c,isDemo:false}))]);
     await page.reload();await page.waitForSelector('[data-center]');
-    await page.locator('#search').fill('conflicting search');await page.locator('#cost').selectOption('paid');
+    await page.locator('#search').fill('conflicting search');await page.locator('#search').press('Enter');await page.locator('#cost').selectOption('paid');
     await page.locator('#vaccination').click();await synchronized(page,2);
     assert.equal(await page.locator('#search').inputValue(),'');assert.equal(await page.locator('#cost').inputValue(),'all');
     await page.locator('[data-center="health-1"]').click();await page.locator('#inquiry').click();
@@ -67,8 +88,8 @@ async function synchronized(page, expected) {
     await synchronized(page,2);await page.locator('[data-pin="learning-1"]').click();await page.locator('#inquiry').click();
     assert.ok((await page.locator('#inquiry-preview').innerText()).includes('opening hours'));
     pass('V2 Learning + Free and geographic marker selection share details and general inquiry');
-    await page.locator('#reset').click();await page.locator('#search').fill('READING');await synchronized(page,2);
-    await page.locator('[data-center="learning-1"]').click();await page.locator('#search').fill('unmatched-zzzzz');await synchronized(page,0);
+    await page.locator('#reset').click();await page.locator('#search').fill('READING');await page.locator('#search').press('Enter');await synchronized(page,2);
+    await page.locator('[data-center="learning-1"]').click();await page.locator('#search').fill('unmatched-zzzzz');await page.locator('#search').press('Enter');await synchronized(page,0);
     assert.equal(await page.locator('#close-details').count(),0);assert.equal(await page.locator('.empty-results').count(),1);
     await page.locator('#empty-reset').click();await synchronized(page,10);
     pass('V3/V4 case-insensitive search, empty state, excluded selection, and reset');
@@ -80,7 +101,7 @@ async function synchronized(page, expected) {
     await page.locator('#inquiry').press('Enter');await page.locator('#close-details').press('Enter');
     assert.ok(await page.locator('[data-center="health-3"]').evaluate(el=>el===document.activeElement));
     pass('V5 unknown fields, inquiry toggle, and close return useful keyboard focus');
-    await page.locator('#vaccination').click();await page.locator('#cost').selectOption('free');await page.locator('#search').fill('little');
+    await page.locator('#vaccination').click();await page.locator('#cost').selectOption('free');await page.locator('#search').fill('little');await page.locator('#search').press('Enter');
     await page.locator('#tag').click();await synchronized(page,1);assert.equal(await page.locator('#cost').inputValue(),'free');assert.equal(await page.locator('#search').inputValue(),'little');
     assert.ok(await page.locator('#reset').evaluate(el=>el===document.activeElement));
     await page.locator('#reset').click();
@@ -90,7 +111,7 @@ async function synchronized(page, expected) {
     await page.keyboard.press('Tab');assert.ok(await page.locator('[data-center="medanta"]').evaluate(el=>el===document.activeElement));
     await page.keyboard.press('Enter');await page.keyboard.press('Enter');
     assert.ok(await page.locator('[data-center="medanta"]').evaluate(el=>el===document.activeElement));
-    await page.locator('#search').focus();await page.keyboard.type('Udayan');await synchronized(page,2);
+    await page.locator('#search').focus();await page.keyboard.type('Udayan');await page.locator('#search').press('Enter');await synchronized(page,2);
     await page.locator('[data-pin="udayan-dundahera"]').focus();await page.keyboard.press('Enter');
     assert.ok((await page.locator('#details').innerText()).includes('Community technology skills'));
     await page.locator('#close-details').press('Enter');
@@ -110,11 +131,12 @@ async function synchronized(page, expected) {
     assert.equal(await page.evaluate(()=>map.options.zoomAnimation),false);
     pass('V6 no horizontal overflow at 320/390/760/1024/1280 and reduced-motion disables CSS/map animation');
     const broken = await newTestPage();
-    await broken.route('**/centers.json',route=>route.fulfill({status:503,body:'Unavailable'}));
+    const failedSearch=route=>route.fulfill({status:503,json:{error:{message:'Provider database unavailable.'}}});
+    await broken.route('**/api/search',failedSearch);
     await broken.goto(base);await broken.getByText('Unable to load center information',{exact:true}).waitFor();
     assert.equal(await broken.locator('[data-center]').count(),0);assert.equal(await broken.locator('[data-pin]').count(),0);
-    assert.ok(await broken.locator('#reset').isDisabled());
-    await broken.unroute('**/centers.json');await broken.reload();await broken.waitForSelector('[data-center]');await synchronized(broken,4);await broken.close();
+    assert.ok(await broken.locator('#retry-search').isVisible());
+    await broken.unroute('**/api/search',failedSearch);await broken.reload();await broken.waitForSelector('[data-center]');await synchronized(broken,4);await broken.close();
     pass('V7 dataset failure produces readable error, no fabricated records, and recovers after reload');
     const noTiles = await newTestPage();
     await noTiles.route('https://tile.openstreetmap.org/**',route=>route.abort());
@@ -135,7 +157,7 @@ async function synchronized(page, expected) {
     assert.deepEqual(report.consoleErrors,[]);pass('No application JavaScript errors during normal discovery');
     report.status='passed';
   } finally {
-    fs.writeFileSync(path.join(output,'caregiving-phase7-results.json'),JSON.stringify(report,null,2)+'\n');
+    fs.writeFileSync(path.join(output,'caregiving-integrated-results.json'),JSON.stringify(report,null,2)+'\n');
     await browser.close();
   }
 })().catch(error=>{console.error(error);process.exitCode=1;});

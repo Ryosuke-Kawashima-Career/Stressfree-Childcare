@@ -34,3 +34,11 @@
 .reminder .announcement p{font-size:11px;color:#52655b}
 .reminder-copy{min-width:0}.announcement p{overflow-wrap:anywhere}
 @media(max-width:760px){.announcement{margin-top:12px}.announcement a{padding:4px 0}.reminder-copy{flex-basis:180px}}
+
+/* Submitted discovery and readable pending/error feedback. */
+.ai-search-form .filter-bar {flex-wrap:wrap;}
+.ai-search-form .search {min-width:min(100%,240px);}
+.search-feedback {display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 0;}
+#search-status {font-size:13px;color:var(--text-secondary,#555);overflow-wrap:anywhere;flex:1;min-width:0;}
+.ai-search-form button:disabled {opacity:.6;cursor:wait;}
+@media(max-width:760px) {.ai-search-form .search {width:100%;} .ai-search-form .filter-bar {gap:10px;} .ai-search-form .segmented {max-width:100%;}}
